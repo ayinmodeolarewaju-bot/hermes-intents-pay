@@ -1,0 +1,53 @@
+name: intents-pay
+label: Intents Pay
+kind: standalone
+version: 1.0.0
+manifest_version: 2
+api_version: 1
+author: ayinmodeolarewaju-bot
+license: MIT
+homepage: https://github.com/ayinmodeolarewaju-bot/hermes-intents-pay
+description: >
+  Create crypto invoices and cross-chain payment quotes for a NEAR account
+  via the NEAR Intents 1-Click API. Dry quotes by default. Never moves funds
+  and never handles signing keys.
+requires_hermes: ">=0.22.0"
+provides_tools:
+  - intents_list_tokens
+  - intents_quote
+  - intents_create_invoice
+  - intents_invoice_status
+  - intents_verify_quote
+provides_hooks: []
+tags:
+  - payments
+  - near
+  - intents
+  - invoices
+config_schema:
+  api_base:
+    type: str
+    default: "https://1click.chaindefuser.com"
+    label: 1-Click API base URL
+    description: NEAR Intents 1-Click endpoint. Leave the default unless you are pointed at a documented mock.
+  default_recipient:
+    type: str
+    default: purefile1686.near
+    label: Default recipient
+    description: NEAR account that receives invoiced funds when the caller does not pass one.
+  slippage_bps:
+    type: int
+    default: 100
+    label: Slippage (basis points)
+    description: 100 is 1 percent. Applied to 1-Click quotes.
+  api_key:
+    type: secret
+    env: INTENTS_PAY_API_KEY
+    required: false
+    label: 1-Click API key
+    description: Optional partner key sent as X-API-Key. Quotes work without it. 1-Click may add a small app fee when it is unset.
+optional_env:
+  - name: INTENTS_PAY_API_KEY
+    description: Optional NEAR Intents 1-Click partner API key, sent only as X-API-Key. Quotes work without it.
+    prompt: 1-Click API key (optional, press enter to skip)
+    password: true

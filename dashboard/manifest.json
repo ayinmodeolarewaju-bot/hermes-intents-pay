@@ -1,0 +1,5 @@
+{
+  "name": "intents-pay",
+  "api": "plugin_api.py",
+  "description": "Invoice and quote routes for the Intents Pay desktop pane."
+}

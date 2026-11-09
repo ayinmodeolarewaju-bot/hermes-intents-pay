@@ -1,0 +1,16 @@
+[project]
+name = "hermes-intents-pay"
+version = "1.0.0"
+description = "Hermes Agent plugin for NEAR Intents invoices and cross-chain quotes"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "ayinmodeolarewaju-bot" }]
+dependencies = ["cryptography>=41,<51"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
