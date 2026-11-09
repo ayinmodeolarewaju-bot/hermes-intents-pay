@@ -12,12 +12,14 @@ Prepared for the Hermes Agent Plugin Hackathon. This file is the catalog change.
 
 ## Pin
 
-`sha` below is the plugin commit to pin: a full 40-character id, not a branch or tag. Image URLs must use that same commit. If this line still says `SHA_TO_PIN`, read the branch tip of this repo after the pin-recording commit and copy the `sha:` value from there.
+Pin this commit. It is the plugin tree (code, tests, README, screenshots). A later commit on the branch only records the hash in this file.
+
+`6196da5fe2ce7125bd008d81656839efd2bed5f9`
 
 ```yaml
 name: intents-pay
 repo: https://github.com/ayinmodeolarewaju-bot/hermes-intents-pay
-sha: SHA_TO_PIN
+sha: 6196da5fe2ce7125bd008d81656839efd2bed5f9
 description: >
   Crypto invoices and cross-chain payment quotes for a NEAR account via the
   NEAR Intents 1-Click API. Dry quotes by default. Never moves funds and never
@@ -29,10 +31,10 @@ requires_hermes: ">=0.22.0"
 version: "1.0.0"
 title: Intents Pay
 docs_url: https://github.com/ayinmodeolarewaju-bot/hermes-intents-pay
-image: https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/SHA_TO_PIN/docs/screenshots/banner.png
+image: https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/banner.png
 screenshots:
-  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/SHA_TO_PIN/docs/screenshots/dry-quote.png
-  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/SHA_TO_PIN/docs/screenshots/usdt-quote.png
+  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/dry-quote.png
+  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/usdt-quote.png
 readme: true
 platforms: []
 known_issues:
