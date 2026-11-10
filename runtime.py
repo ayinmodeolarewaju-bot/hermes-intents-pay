@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .ledger import Ledger, hermes_ledger_path
-from .tokens import API_BASE, DEFAULT_RECIPIENT
+from .tokens import API_BASE
 
 PLUGIN_ID = "intents-pay"
 API_KEY_ENV = "INTENTS_PAY_API_KEY"
@@ -19,7 +19,6 @@ API_KEY_ENV = "INTENTS_PAY_API_KEY"
 @dataclass
 class Settings:
     api_base: str = API_BASE
-    default_recipient: str = DEFAULT_RECIPIENT
     slippage_bps: int = 100
     api_key: str | None = None
 
@@ -71,8 +70,6 @@ def _settings_from_mapping(mapping: dict[str, Any] | None, settings: Settings) -
         return settings
     if mapping.get("api_base"):
         settings.api_base = str(mapping["api_base"]).strip() or settings.api_base
-    if mapping.get("default_recipient"):
-        settings.default_recipient = str(mapping["default_recipient"]).strip()
     if mapping.get("slippage_bps") not in (None, ""):
         try:
             settings.slippage_bps = int(mapping["slippage_bps"])
@@ -85,9 +82,6 @@ def settings_from_host(ctx: Any = None) -> Settings:
     settings = Settings(api_key=read_api_key())
     if ctx is not None:
         settings.api_base = str(_config_value(ctx, "api_base", settings.api_base))
-        settings.default_recipient = str(
-            _config_value(ctx, "default_recipient", settings.default_recipient)
-        )
         try:
             settings.slippage_bps = int(_config_value(ctx, "slippage_bps", settings.slippage_bps))
         except (TypeError, ValueError):

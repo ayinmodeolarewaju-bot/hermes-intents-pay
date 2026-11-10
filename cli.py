@@ -56,6 +56,11 @@ def parse_slash(raw: str) -> tuple[str, dict[str, Any]] | tuple[None, str]:
                 args["memo"] = " ".join(rest[index + 1 :])
                 break
             return None, _usage()
+        if not args.get("recipient"):
+            return None, (
+                "A recipient NEAR account is required. "
+                "Example: /intents quote 25 USDC from arb to name.near"
+            )
         return action, args
     return None, _usage()
 
@@ -66,6 +71,7 @@ def _usage() -> str:
         "/intents tokens [SYMBOL] [CHAIN]\n"
         "/intents quote AMOUNT [USDC|USDT|NEAR] from CHAIN [TOKEN] to ACCOUNT memo TEXT\n"
         "/intents invoice AMOUNT [USDC|USDT|NEAR] to ACCOUNT memo TEXT\n"
+        "ACCOUNT is required. There is no default recipient.\n"
         "/intents status [INVOICE_ID]\n"
         "Slash commands are dry-run only. They never create a deposit address."
     )
@@ -98,7 +104,7 @@ def setup_cli(subparser: argparse.ArgumentParser) -> None:
     quote.add_argument("--currency", default="USDC")
     quote.add_argument("--from-chain", default="arb")
     quote.add_argument("--from-token", default=None)
-    quote.add_argument("--recipient", default=None)
+    quote.add_argument("--recipient", required=True, help="NEAR account that receives the payment. Required.")
     quote.add_argument("--memo", default="")
     quote.add_argument("--live", action="store_true", help="Request a deposit address. Requires --refund-to and a prior token.")
     quote.add_argument("--refund-to", default=None)
@@ -127,8 +133,7 @@ def handle_cli(args: argparse.Namespace) -> None:
         }
         if args.from_token:
             payload["pay_from"] = args.from_token
-        if args.recipient:
-            payload["recipient"] = args.recipient
+        payload["recipient"] = args.recipient
         if args.refund_to:
             payload["refund_to"] = args.refund_to
         if args.confirm_token:

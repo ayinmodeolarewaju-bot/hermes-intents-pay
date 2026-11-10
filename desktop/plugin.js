@@ -57,7 +57,7 @@ function IntentsPane(props) {
   var currencyState = useState('USDC')
   var currency = currencyState[0]
   var setCurrency = currencyState[1]
-  var recipientState = useState('purefile1686.near')
+  var recipientState = useState('')
   var recipient = recipientState[0]
   var setRecipient = recipientState[1]
   var chainState = useState('arb')
@@ -128,11 +128,19 @@ function IntentsPane(props) {
   }
 
   function dryQuote() {
+    if (!recipient.trim()) {
+      setError('Enter the NEAR recipient. There is no default payee.')
+      return
+    }
     setAgreed(false)
     run('/quote', payload({ dry: true }))
   }
 
   function prepareLive() {
+    if (!recipient.trim()) {
+      setError('Enter the NEAR recipient. There is no default payee.')
+      return
+    }
     if (!agreed) {
       setError('Check the box to confirm you want a deposit address. No funds are sent.')
       return
@@ -227,6 +235,7 @@ function IntentsPane(props) {
         title: 'NEAR recipient',
         children: jsx('input', {
           value: recipient,
+          placeholder: 'name.near (required)',
           onChange: function (event) { setRecipient(event.target.value) },
           style: fieldStyle()
         })

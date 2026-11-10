@@ -14,9 +14,9 @@ warnings: []
 $ hermes plugins enable intents-pay
 ✓ Plugin intents-pay enabled.
 
-$ hermes intents-pay quote --amount 25 --currency USDC --from-chain arb --from-token USDC --recipient purefile1686.near --memo "hackathon demo"
+$ hermes intents-pay quote --amount 25 --currency USDC --from-chain arb --from-token USDC --recipient name.near --memo "hackathon demo"
 Intents Pay IP-20261109-3B2B
-Due: 25 USDC to purefile1686.near
+Due: 25 USDC to name.near
 Memo: hackathon demo (invoice note only, not sent on-chain)
 Pay with: USDC on arb
 Payer sends about: 25.260104 USDC (about $25.246791925192)
@@ -33,9 +33,9 @@ USDC on base  nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near
 $ hermes intents-pay quote --amount 1 --currency USDC --from-chain arb --live --refund-to 0x1111…1111
 (dry preview only — confirmation_token issued, no deposit address)
 
-$ hermes intents-pay quote --amount 10 --currency USDT --from-chain arb --from-token USDT --recipient purefile1686.near
+$ hermes intents-pay quote --amount 10 --currency USDT --from-chain arb --from-token USDT --recipient name.near
 Intents Pay IP-20261109-2CD4
-Due: 10 USDT to purefile1686.near
+Due: 10 USDT to name.near
 Pay with: USDT0 on arb
 Payer sends about: 10.106739 USDT0 (about $10.094853474936)
 Recipient gets: 10.0 USDT
@@ -43,4 +43,4 @@ Quote: dry run. No deposit address was created. No funds can be sent.
 1-Click signature: verified.
 
 $ hermes intents-pay status
-IP-20261109-3B2B  25 USDC  purefile1686.near  dry  deposit_address null
+IP-20261109-3B2B  25 USDC  name.near  dry  deposit_address null

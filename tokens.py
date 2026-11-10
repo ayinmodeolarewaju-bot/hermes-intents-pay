@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import Any
 
 INVOICE_CURRENCIES = ("USDC", "USDT", "NEAR")
-DEFAULT_RECIPIENT = "purefile1686.near"
 DEFAULT_ORIGIN_CHAIN = "arb"
 API_BASE = "https://1click.chaindefuser.com"
 REFERRAL = "hermes-intents-pay"

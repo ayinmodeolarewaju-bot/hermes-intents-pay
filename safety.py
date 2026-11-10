@@ -66,7 +66,7 @@ def normalize_near_account(account_id: str) -> str:
     if not is_near_account(text):
         raise InputError(
             f"{account_id!r} is not a NEAR account id. "
-            "Use a name like purefile1686.near or a 64-character hex implicit account."
+            "Use a name like name.near or a 64-character hex implicit account."
         )
     return text
 

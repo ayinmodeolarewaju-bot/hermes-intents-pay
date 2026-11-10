@@ -1,10 +1,10 @@
-Script started on 2026-11-09 22:38:53+00:00 [COMMAND="hermes intents-pay quote --amount 5 --currency USDC --from-chain sol --from-token USDC --recipient purefile1686.near" <not executed on terminal>]
+Script started on 2026-11-09 22:38:53+00:00 [COMMAND="hermes intents-pay quote --amount 5 --currency USDC --from-chain sol --from-token USDC --recipient name.near" <not executed on terminal>]
 hermes: completing source-update dependencies...
 hermes: preparing dependencies for this update...
   → Resolving Python dependencies…  → Resolving Python dependencies… Resolved 357 packages in 124ms                                                                   ✓ Resolving Python dependencies
   → Installing Python dependencies…  → Installing Python dependencies… Building hermes-agent @ file:///home/ubuntu  → Installing Python dependencies… Built hermes-agent @ file:///home/ubuntu/.h  → Installing Python dependencies… Installed 104 packages in 36ms               → Installing Python dependencies… Bytecode compiled 4751 files in 1.27s                                                                           ✓ Installing Python dependencies
 Intents Pay IP-20261109-27AE
-Due: 5 USDC to purefile1686.near
+Due: 5 USDC to name.near
 Pay with: USDC on sol
 Payer sends about: 5.055643 USDC (about $5.053029232569)
 Recipient gets: 5.0 USDC

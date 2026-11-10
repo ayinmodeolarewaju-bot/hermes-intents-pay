@@ -12,14 +12,14 @@ Prepared for the Hermes Agent Plugin Hackathon. This file is the catalog change.
 
 ## Pin
 
-Pin this commit. It is the plugin tree (code, tests, README, screenshots). A later commit on the branch only records the hash in this file.
+Do not pin `6196da5fe2ce7125bd008d81656839efd2bed5f9`. That tree defaults a missing recipient to a built-in account, and Nous closed the catalog PR for that reason.
 
-`6196da5fe2ce7125bd008d81656839efd2bed5f9`
+Pin the `main` commit of version **1.1.0** (explicit recipient and `pre_tool_call` approve directive). Replace `PIN_1_1_0_ON_MAIN` below with that full 40-character SHA before opening the catalog PR. Image URLs must use the same commit.
 
 ```yaml
 name: intents-pay
 repo: https://github.com/ayinmodeolarewaju-bot/hermes-intents-pay
-sha: 6196da5fe2ce7125bd008d81656839efd2bed5f9
+sha: PIN_1_1_0_ON_MAIN
 description: >
   Crypto invoices and cross-chain payment quotes for a NEAR account via the
   NEAR Intents 1-Click API. Dry quotes by default. Never moves funds and never
@@ -27,19 +27,20 @@ description: >
 maintainer: ayinmodeolarewaju-bot
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
-version: "1.0.0"
+requires_hermes: ">=0.23.0"
+version: "1.1.0"
 title: Intents Pay
 docs_url: https://github.com/ayinmodeolarewaju-bot/hermes-intents-pay
-image: https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/banner.png
+image: https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/PIN_1_1_0_ON_MAIN/docs/screenshots/banner.png
 screenshots:
-  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/dry-quote.png
-  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/6196da5fe2ce7125bd008d81656839efd2bed5f9/docs/screenshots/usdt-quote.png
+  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/PIN_1_1_0_ON_MAIN/docs/screenshots/dry-quote.png
+  - https://raw.githubusercontent.com/ayinmodeolarewaju-bot/hermes-intents-pay/PIN_1_1_0_ON_MAIN/docs/screenshots/usdt-quote.png
 readme: true
 platforms: []
 known_issues:
   - "Dry quotes on EVM and Solana send a public placeholder refund address so 1-Click can check the format. No deposit is created. A live quote rejects that placeholder and requires the payer's own refund address plus a one-time confirmation token."
   - "Verification for this release used live dry quotes only. Completing a mainnet deposit address is gated and was not part of the test run."
+  - "A quote or invoice requires an explicit recipient. Payable tool calls wait for Hermes's approval prompt via pre_tool_call."
 capabilities:
   provides_tools:
     - intents_list_tokens
@@ -47,7 +48,8 @@ capabilities:
     - intents_create_invoice
     - intents_invoice_status
     - intents_verify_quote
-  provides_hooks: []
+  provides_hooks:
+    - pre_tool_call
   provides_middleware: []
   requires_env: []
 ```

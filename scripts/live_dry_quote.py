@@ -34,6 +34,9 @@ def main() -> int:
     from intents_pay_plugin.runtime import Deps, Settings
     from intents_pay_plugin.service import quote_payment
 
+    if len(sys.argv) < 2 or not sys.argv[1].strip():
+        print("recipient is required. Example: python scripts/live_dry_quote.py name.near")
+        return 2
     client = OneClickClient()
     result = quote_payment(
         {
@@ -41,7 +44,7 @@ def main() -> int:
             "currency": "USDC",
             "pay_from": "USDC",
             "origin_chain": "arb",
-            "recipient": "purefile1686.near",
+            "recipient": sys.argv[1].strip(),
             "memo": "hermes intents pay dry run",
             "dry": True,
         },

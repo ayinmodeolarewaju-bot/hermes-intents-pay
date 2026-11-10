@@ -299,9 +299,13 @@ def _plan(args: dict[str, Any], deps: Deps) -> dict[str, Any]:
         raise InputError("currency must be USDC, USDT, or NEAR")
     amount_human = normalize_amount(args.get("amount"))
     amount = parse_amount(amount_human)
-    recipient = normalize_near_account(
-        args.get("recipient") or args.get("payout_account") or settings.default_recipient
-    )
+    raw_recipient = args.get("recipient") or args.get("payout_account")
+    if raw_recipient is None or not str(raw_recipient).strip():
+        raise InputError(
+            "recipient is required. Pass the NEAR account that should receive the payment. "
+            "Intents Pay has no default recipient."
+        )
+    recipient = normalize_near_account(raw_recipient)
     memo = str(args.get("memo") or "").strip()
     if len(memo) > 280:
         raise InputError("memo must be 280 characters or fewer")

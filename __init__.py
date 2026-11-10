@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from .approval import pre_tool_call
 from .cli import handle_cli, setup_cli, slash_command
 from .schemas import TOOL_SCHEMAS
 from .tools import HANDLERS, bind_context
@@ -31,6 +32,7 @@ def register(ctx) -> None:
             if child.is_dir() and skill_md.is_file():
                 ctx.register_skill(child.name, skill_md)
 
+    ctx.register_hook("pre_tool_call", pre_tool_call)
     ctx.register_command(
         "intents",
         slash_command,

@@ -38,16 +38,16 @@ Optional partner key, only if you have one from [NEAR Intents](https://docs.near
 ## What you can ask Hermes
 
 - "What can someone pay with on Base?"
-- "Dry-run a quote for 25 USDC to purefile1686.near, paid in USDC on Arbitrum."
-- "Make an invoice for 10 USDT to purefile1686.near, memo design sprint."
+- "Dry-run a quote for 25 USDC to name.near, paid in USDC on Arbitrum."
+- "Make an invoice for 10 USDT to name.near, memo design sprint."
 - "Check invoice IP-20261109-3B2B."
 - "Verify this 1-Click quote signature."
 
 Slash commands are dry-run only:
 
 ```text
-/intents quote 25 USDC from arb USDC to purefile1686.near memo design sprint
-/intents invoice 10 USDT to purefile1686.near
+/intents quote 25 USDC from arb USDC to name.near memo design sprint
+/intents invoice 10 USDT to name.near
 /intents tokens USDC base
 /intents status IP-20261109-3B2B
 ```
@@ -55,7 +55,7 @@ Slash commands are dry-run only:
 CLI, same code path Hermes registers:
 
 ```bash
-hermes intents-pay quote --amount 25 --currency USDC --from-chain arb --recipient purefile1686.near
+hermes intents-pay quote --amount 25 --currency USDC --from-chain arb --recipient name.near
 hermes intents-pay tokens --symbol USDC --chain base
 hermes intents-pay status
 ```
@@ -72,7 +72,9 @@ A live deposit address is a second step. The first call returns a dry preview an
 | `intents_invoice_status` | Lists saved invoices, or reads `GET /v0/status` for a deposit address. |
 | `intents_verify_quote` | Checks the Ed25519 signature with the published 1-Click manager public key. A failed check withholds the deposit address. |
 
-Default recipient is `purefile1686.near`. Default payer route is USDC on Arbitrum. NEAR payouts settle as wNEAR (`nep141:wrap.near`). USDT on some chains is listed as USDT0; the plugin matches that alias. The invoice memo stays on the invoice. It is not submitted as an on-chain message.
+Every quote and invoice needs an explicit `recipient`. There is no default payee. The default payer route is USDC on Arbitrum. NEAR payouts settle as wNEAR (`nep141:wrap.near`). USDT on some chains is listed as USDT0; the plugin matches that alias. The invoice memo stays on the invoice. It is not submitted as an on-chain message.
+
+`intents_create_invoice`, and `intents_quote` when `dry` is false, register a `pre_tool_call` hook that returns `{"action": "approve"}`. Hermes then shows its approval prompt before the handler runs. Token lists, dry quotes, status checks, and signature checks do not ask for that prompt.
 
 ## Desktop pane
 
@@ -82,8 +84,10 @@ Hermes Desktop was not running on the machine that verified this plugin, so the 
 
 ## Safety
 
+- There is no default recipient. A quote or invoice without `recipient` returns an error and does not call 1-Click.
 - Default `dry: true`. A dry quote has no deposit address, so nothing can be sent.
-- A non-dry quote needs the payer's own `refund_to`, `confirm: true`, and the confirmation token from the previous call. The token is bound to the amount, assets, recipient, and refund address, and it expires after 10 minutes.
+- Before `intents_create_invoice`, and before `intents_quote` with `dry: false`, a `pre_tool_call` hook returns `{"action": "approve", "rule_key": "intents-pay:<tool>"}`. Hermes shows its approval prompt and does not run the handler if the person denies it, times out, or the gate errors.
+- A non-dry quote still needs the payer's own `refund_to`, `confirm: true`, and the confirmation token from the previous call. The token is bound to the amount, assets, recipient, and refund address, and it expires after 10 minutes.
 - Unattended runs (cron) cannot create a live quote.
 - Public placeholder refund addresses are used only for dry quotes on EVM and Solana, so 1-Click can check the address format. They are rejected if someone passes them as the live refund address.
 - Strings that look like a seed phrase, a PEM block, or a long `ed25519:` signing key are refused before any network call.
@@ -98,13 +102,13 @@ Hermes Agent v0.23.0, plugin enabled, live API, no deposit address requested to 
 
 | Call | Result |
 | --- | --- |
-| 25 USDC from Arbitrum to `purefile1686.near` | Payer sends about 25.260104 USDC. Signature verified. No deposit address. |
+| 25 USDC from Arbitrum to an explicit NEAR account | Payer sends about 25.260104 USDC. Signature verified. No deposit address. |
 | 10 USDT from Arbitrum | Matched USDT0. About 10.106739 USDT0. Signature verified. |
 | 5 USDC from Solana | About 5.055643 USDC, ~20s. Signature verified. |
 | USDC on Base | 1 of 216 listed tokens. |
 | `--live` without completing the token | Dry preview plus a confirmation token. No deposit address. |
 
-`hermes plugins validate /workspace --install-deps` passed with no warnings (manifest, capability probe, declared tools, security scan `safe`, desktop surface, no core override). `hermes plugins doctor /workspace --ci` registered 5 tools. `python -m pytest` covers mocked 1-Click responses, the confirmation gate, signature tampering, and secret refusal.
+`hermes plugins validate /workspace --install-deps` passed with no warnings (manifest, capability probe, declared tools, security scan `safe`, desktop surface, no core override). `hermes plugins doctor /workspace --ci` registers 5 tools and the `pre_tool_call` hook. `python -m pytest` covers a missing recipient, the approval directive, mocked 1-Click responses, the confirmation token, signature tampering, and secret refusal.
 
 ## Develop
 

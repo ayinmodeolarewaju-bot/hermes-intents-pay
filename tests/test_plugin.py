@@ -16,6 +16,8 @@ from intents_pay_plugin.ledger import Ledger
 from intents_pay_plugin.runtime import Deps, Settings
 
 ROOT = Path(__file__).resolve().parents[1]
+# Captured 1-Click response. Its recipient field is part of the signed bytes
+# used to prove verification. It is not a default payee.
 FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "dry_quote.json").read_text())
 
 NEAR_USDC = "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
@@ -101,7 +103,7 @@ def test_amounts_accounts_and_refunds():
         raise AssertionError("expected decimal error")
     except safety.InputError:
         pass
-    assert safety.is_near_account("purefile1686.near")
+    assert safety.is_near_account("payee.near")
     assert not safety.is_near_account("Bad Account")
     assert safety.refund_address_error("arb", "0x" + "ab" * 20) is None
     assert safety.refund_address_error("arb", "not-an-address")
@@ -119,20 +121,20 @@ def test_token_preference_and_usdt_alias():
 
 def test_dry_quote_is_default_and_verifies():
     fake = FakeClient()
-    result = service.quote_payment({"amount": "25", "recipient": "purefile1686.near"}, make_deps(fake))
+    result = service.quote_payment({"amount": "25", "recipient": "payee.near"}, make_deps(fake))
     assert result["ok"] is True
     assert result["dry"] is True
     assert result["deposit_address"] is None
     assert result["signature_valid"] is True
     assert result["funds_moved"] is False
-    assert "purefile1686.near" in result["summary"]
+    assert "payee.near" in result["summary"]
     assert "No deposit address" in result["summary"]
     assert fake.calls[0]["dry"] is True
     assert fake.calls[0]["swapType"] == "EXACT_OUTPUT"
     assert fake.calls[0]["amount"] == "25000000"
     assert fake.calls[0]["originAsset"] == ARB_USDC
     assert fake.calls[0]["destinationAsset"] == NEAR_USDC
-    assert fake.calls[0]["recipient"] == "purefile1686.near"
+    assert fake.calls[0]["recipient"] == "payee.near"
     assert "appFees" not in fake.calls[0]
     assert "customRecipientMsg" not in fake.calls[0]
     assert fake.calls[0]["referral"] == "hermes-intents-pay"
@@ -142,13 +144,13 @@ def test_dry_quote_is_default_and_verifies():
 def test_usdt_and_near_routes():
     fake = FakeClient()
     usdt = service.quote_payment(
-        {"amount": "5", "currency": "USDT", "pay_from": "USDT", "origin_chain": "arb"},
+        {"amount": "5", "currency": "USDT", "pay_from": "USDT", "origin_chain": "arb", "recipient": "payee.near"},
         make_deps(fake),
     )
     assert usdt["ok"] is True
     assert usdt["pay_from_symbol"] == "USDT0"
     assert fake.calls[-1]["originAsset"] == ARB_USDT0
-    near = service.quote_payment({"amount": "1", "currency": "NEAR"}, make_deps(fake))
+    near = service.quote_payment({"amount": "1", "currency": "NEAR", "recipient": "payee.near"}, make_deps(fake))
     assert near["ok"] is True
     assert fake.calls[-1]["destinationAsset"] == WRAP_NEAR
     assert fake.calls[-1]["amount"] == "1" + "0" * 24
@@ -158,7 +160,7 @@ def test_usdt_and_near_routes():
 def test_live_quote_requires_confirmation_token_and_refund():
     fake = FakeClient()
     deps = make_deps(fake)
-    blocked = service.quote_payment({"amount": "25", "dry": False}, deps)
+    blocked = service.quote_payment({"amount": "25", "dry": False, "recipient": "payee.near"}, deps)
     assert blocked["ok"] is False
     assert fake.calls == []
 
@@ -166,6 +168,7 @@ def test_live_quote_requires_confirmation_token_and_refund():
         {
             "amount": "25",
             "dry": False,
+            "recipient": "payee.near",
             "refund_to": "0x" + "11" * 20,
             "confirm": True,
         },
@@ -180,6 +183,7 @@ def test_live_quote_requires_confirmation_token_and_refund():
         {
             "amount": "26",
             "dry": False,
+            "recipient": "payee.near",
             "refund_to": "0x" + "11" * 20,
             "confirm": True,
             "confirmation_token": preview["confirmation_token"],
@@ -193,6 +197,7 @@ def test_live_quote_requires_confirmation_token_and_refund():
         {
             "amount": "25",
             "dry": False,
+            "recipient": "payee.near",
             "refund_to": "0x" + "11" * 20,
             "confirm": True,
             "confirmation_token": preview["confirmation_token"],
@@ -210,14 +215,15 @@ def test_bad_signature_withholds_deposit_address():
     fake = FakeClient()
     deps = make_deps(fake, verify=lambda _response: False)
     preview = service.quote_payment(
-        {"amount": "2", "dry": False, "refund_to": "0x" + "22" * 20},
+            {"amount": "2", "dry": False, "recipient": "payee.near", "refund_to": "0x" + "22" * 20},
         deps,
     )
     refused = service.quote_payment(
         {
-            "amount": "2",
-            "dry": False,
-            "refund_to": "0x" + "22" * 20,
+                "amount": "2",
+                "dry": False,
+                "recipient": "payee.near",
+                "refund_to": "0x" + "22" * 20,
             "confirm": True,
             "confirmation_token": preview["confirmation_token"],
         },
@@ -234,9 +240,10 @@ def test_placeholder_refund_and_unattended_and_secrets_do_not_call_live():
     fake = FakeClient()
     placeholder = service.quote_payment(
         {
-            "amount": "3",
-            "dry": False,
-            "refund_to": safety.EVM_DRY_PLACEHOLDER,
+                "amount": "3",
+                "recipient": "payee.near",
+                "dry": False,
+                "refund_to": safety.EVM_DRY_PLACEHOLDER,
             "confirm": True,
             "confirmation_token": "nope",
         },
@@ -246,14 +253,14 @@ def test_placeholder_refund_and_unattended_and_secrets_do_not_call_live():
     assert fake.calls == []
 
     unattended = service.quote_payment(
-        {"amount": "3", "dry": False, "refund_to": "0x" + "33" * 20, "confirm": True, "confirmation_token": "t"},
+            {"amount": "3", "recipient": "payee.near", "dry": False, "refund_to": "0x" + "33" * 20, "confirm": True, "confirmation_token": "t"},
         make_deps(fake, unattended=True),
     )
     assert unattended["code"] == "unattended"
     assert fake.calls == []
 
     secret = service.create_invoice(
-        {"amount": "3", "memo": "abandon " * 11 + "about"},
+        {"amount": "3", "recipient": "payee.near", "memo": "abandon " * 11 + "about"},
         make_deps(fake),
     )
     assert secret["ok"] is False
@@ -265,10 +272,10 @@ def test_invoice_status_and_verify_roundtrip():
     fake = FakeClient()
     deps = make_deps(fake)
     created = service.create_invoice(
-        {"amount": "10", "memo": "design sprint", "recipient": "PureFile1686.near"},
+        {"amount": "10", "memo": "design sprint", "recipient": "Payee.near"},
         deps,
     )
-    assert created["recipient"] == "purefile1686.near"
+    assert created["recipient"] == "payee.near"
     assert "design sprint" in created["summary"]
     listed = service.payment_status({}, deps)
     assert listed["invoices"][0]["id"] == created["id"]
@@ -281,14 +288,15 @@ def test_invoice_status_and_verify_roundtrip():
     assert checked["deposit_address"] is None
 
     preview = service.quote_payment(
-        {"amount": "10", "dry": False, "refund_to": "0x" + "44" * 20, "kind": "invoice"},
+            {"amount": "10", "recipient": "payee.near", "dry": False, "refund_to": "0x" + "44" * 20, "kind": "invoice"},
         deps,
     )
     live = service.create_invoice(
         {
-            "amount": "10",
-            "dry": False,
-            "refund_to": "0x" + "44" * 20,
+                "amount": "10",
+                "recipient": "payee.near",
+                "dry": False,
+                "refund_to": "0x" + "44" * 20,
             "confirm": True,
             "confirmation_token": preview["confirmation_token"],
         },
@@ -325,13 +333,13 @@ def test_list_tokens_summary_and_client_errors():
 
 
 def test_slash_parser_is_dry_only():
-    action, args = cli.parse_slash("quote 25 USDC from arb USDC to purefile1686.near memo design sprint")
+    action, args = cli.parse_slash("quote 25 USDC from arb USDC to payee.near memo design sprint")
     assert action == "quote"
     assert args["amount"] == "25"
     assert args["currency"] == "USDC"
     assert args["origin_chain"] == "arb"
     assert args["pay_from"] == "USDC"
-    assert args["recipient"] == "purefile1686.near"
+    assert args["recipient"] == "payee.near"
     assert args["memo"] == "design sprint"
     assert args["dry"] is True
     assert cli.parse_slash("help")[0] is None
@@ -342,10 +350,53 @@ def test_slash_parser_is_dry_only():
 
 def test_tool_handler_returns_json():
     fake = FakeClient()
-    raw = tools.intents_quote({"amount": "1"}, _deps=make_deps(fake))
+    raw = tools.intents_quote({"amount": "1", "recipient": "payee.near"}, _deps=make_deps(fake))
     payload = json.loads(raw)
     assert payload["ok"] is True
     assert payload["dry"] is True
+
+
+def test_missing_recipient_is_rejected_and_does_not_call_1click():
+    fake = FakeClient()
+    missing = service.quote_payment({"amount": "25"}, make_deps(fake))
+    assert missing["ok"] is False
+    assert "recipient is required" in missing["error"]
+    assert "no default recipient" in missing["error"]
+    assert fake.calls == []
+    invoice = service.create_invoice({"amount": "10"}, make_deps(fake))
+    assert invoice["ok"] is False
+    assert "recipient is required" in invoice["error"]
+    assert fake.calls == []
+    parsed = cli.parse_slash("quote 25 USDC from arb")
+    assert parsed[0] is None
+    assert "required" in str(parsed[1]).lower()
+
+
+def test_approval_hook_only_payable_tools():
+    from intents_pay_plugin.approval import approval_directive, pre_tool_call
+
+    live = approval_directive(
+        "intents_quote",
+        {"amount": "1", "recipient": "payee.near", "dry": False},
+    )
+    assert live is not None
+    assert live["action"] == "approve"
+    assert live["rule_key"] == "intents-pay:intents_quote"
+    assert "payee.near" in live["message"]
+    invoice = pre_tool_call(
+        "intents_create_invoice",
+        {"amount": "1", "recipient": "payee.near", "dry": True},
+        task_id="task",
+    )
+    assert invoice["action"] == "approve"
+    assert invoice["rule_key"] == "intents-pay:intents_create_invoice"
+    assert approval_directive("intents_quote", {"amount": "1", "recipient": "payee.near"}) is None
+    assert approval_directive("intents_quote", {"amount": "1", "dry": True, "recipient": "payee.near"}) is None
+    assert pre_tool_call("intents_list_tokens", {}, task_id="") is None
+    assert pre_tool_call("intents_invoice_status", {"invoice_id": "ip_x"}) is None
+    assert pre_tool_call("intents_verify_quote", {"invoice_id": "ip_x"}) is None
+    assert approval_directive("intents_quote", {"dry": "false", "recipient": "payee.near"})["action"] == "approve"
+    assert approval_directive("other_tool", {"dry": False}) is None
 
 
 def test_register_matches_manifest_and_desktop_surface():
@@ -354,6 +405,7 @@ def test_register_matches_manifest_and_desktop_surface():
     plugin.register(ctx)
     declared = _declared_tools()
     assert [item["name"] for item in ctx.tools] == declared
+    assert ctx.hooks == ["pre_tool_call"]
     assert ctx.commands == ["intents"]
     assert ctx.cli == ["intents-pay"]
     assert "workflow" in ctx.skills
@@ -403,6 +455,7 @@ class FakeCtx:
         self.commands = []
         self.skills = []
         self.cli = []
+        self.hooks = []
 
     def register_tool(self, **kwargs):
         self.tools.append(kwargs)
@@ -414,6 +467,10 @@ class FakeCtx:
     def register_command(self, name, handler, description="", args_hint=""):
         assert callable(handler)
         self.commands.append(name)
+
+    def register_hook(self, name, callback):
+        assert callable(callback)
+        self.hooks.append(name)
 
     def register_cli_command(self, **kwargs):
         assert callable(kwargs["setup_fn"])

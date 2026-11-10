@@ -7,12 +7,14 @@ description: Quote and invoice a cross-chain payment to a NEAR account with the 
 
 Use the `intents-pay` tools. Quote figures, deposit addresses, and payment status come from the tool result. Refuse any seed phrase, recovery phrase, or signing key the user offers. This plugin cannot move funds.
 
-## Defaults
+## Required recipient
 
-- Recipient, when the user does not name one: `purefile1686.near`
+- Always pass `recipient`. If the user did not name a NEAR account, ask for one and do not call the quote or invoice tool.
+- There is no default payee.
 - Payout currency: `USDC` on NEAR (or `USDT`, or `NEAR` which settles as wNEAR)
 - Payer route: USDC on Arbitrum unless they name a chain or token
 - `dry: true` unless they explicitly ask for a deposit address
+- A live quote (`dry: false`) and every `intents_create_invoice` call ask Hermes for approval before they run. Do not try to skip that prompt.
 
 ## Tool order
 

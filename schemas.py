@@ -49,7 +49,8 @@ INTENTS_QUOTE = {
         "Get a NEAR Intents 1-Click quote for paying a NEAR account from another chain. "
         "Default is a dry EXACT_OUTPUT quote: amount is what the recipient should receive "
         "in currency (USDC, USDT, or NEAR), and the response says what the payer sends. "
-        "Default recipient is purefile1686.near. Default payer route is USDC on Arbitrum. "
+        "recipient is required and there is no default payee. "
+        "Default payer route is USDC on Arbitrum. "
         + _SAFETY
     ),
     "parameters": {
@@ -66,7 +67,7 @@ INTENTS_QUOTE = {
             },
             "recipient": {
                 "type": "string",
-                "description": "NEAR account that receives the payout. Default purefile1686.near.",
+                "description": "NEAR account that receives the payout. Required. There is no default.",
             },
             "pay_from": {
                 "type": "string",
@@ -110,7 +111,7 @@ INTENTS_QUOTE = {
                 "description": "One-time token returned when a live quote was previewed. Binds the amount, assets, recipient, and refund address.",
             },
         },
-        "required": ["amount"],
+        "required": ["amount", "recipient"],
         "additionalProperties": False,
     },
 }
